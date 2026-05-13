@@ -1,0 +1,8 @@
+Flask>=2.2
+Flask-CORS>=4.0
+opencv-python>=4.7
+easyocr>=1.6
+numpy>=1.24
+Werkzeug>=2.2
+# Optional (for YOLOv8 support):
+# ultralytics

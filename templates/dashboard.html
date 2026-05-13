@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🅿️ Parking Management Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-title h1 {
+            color: #333;
+            font-size: 28px;
+        }
+
+        .header-title .emoji {
+            font-size: 32px;
+        }
+
+        .time-display {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card.cars {
+            border-left: 5px solid #4CAF50;
+        }
+
+        .stat-card.exits {
+            border-left: 5px solid #2196F3;
+        }
+
+        .stat-card.revenue-today {
+            border-left: 5px solid #FF9800;
+        }
+
+        .stat-card.revenue-total {
+            border-left: 5px solid #F44336;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .stat-unit {
+            font-size: 14px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 18px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th {
+            background: #f5f5f5;
+            color: #333;
+            padding: 12px;
+            text-align: left;
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .table td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
+
+        .table tbody tr:hover {
+            background: #f9f9f9;
+        }
+
+        .plate {
+            font-weight: bold;
+            color: #667eea;
+            font-family: monospace;
+            font-size: 16px;
+        }
+
+        .amount {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .amount.free {
+            color: #999;
+            font-style: italic;
+        }
+
+        .empty-message {
+            text-align: center;
+            color: #999;
+            padding: 30px;
+            font-style: italic;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #333;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: monospace;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .btn-entry {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-entry:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn-exit {
+            background: #FF9800;
+            color: white;
+        }
+
+        .btn-exit:hover {
+            background: #e68900;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 152, 0, 0.3);
+        }
+
+        .alert {
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 5px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .alert.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .alert.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .duration {
+            color: #2196F3;
+        }
+
+        .time {
+            color: #999;
+            font-size: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+
+            header {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+        }
+
+        .refresh-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #4CAF50;
+            border-radius: 50%;
+            margin-left: 10px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-title">
+                <span class="emoji">🅿️</span>
+                <div>
+                    <h1>Parking Management System</h1>
+                    <div class="time-display" id="current-time"></div>
+                </div>
+            </div>
+            <div style="text-align: right;">
+                <div style="color: #4CAF50; font-weight: bold;">Live Dashboard</div>
+                <div class="refresh-indicator"></div>
+            </div>
+        </header>
+
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card cars">
+                <div class="stat-label">🚗 Cars in Lot</div>
+                <div class="stat-value" id="cars-in">0</div>
+            </div>
+
+            <div class="stat-card exits">
+                <div class="stat-label">🚙 Exits Today</div>
+                <div class="stat-value" id="exits-today">0</div>
+            </div>
+
+            <div class="stat-card revenue-today">
+                <div class="stat-label">💰 Revenue Today</div>
+                <div class="stat-value">Rs <span id="revenue-today">0.00</span></div>
+            </div>
+
+            <div class="stat-card revenue-total">
+                <div class="stat-label">💵 Total Revenue</div>
+                <div class="stat-value">Rs <span id="total-revenue">0.00</span></div>
+            </div>
+        </div>
+
+        <!-- Content Grid -->
+        <div class="content-grid">
+            <!-- Active Vehicles -->
+            <div class="card">
+                <h2>🚗 Active Vehicles</h2>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Plate</th>
+                            <th>Entry Time</th>
+                            <th>Duration</th>
+                        </tr>
+                    </thead>
+                    <tbody id="active-vehicles">
+                        <tr>
+                            <td colspan="3" class="empty-message">No vehicles in lot</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Recent Exits -->
+            <div class="card">
+                <h2>🚙 Recent Exits</h2>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Plate</th>
+                            <th>Duration</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recent-exits">
+                        <tr>
+                            <td colspan="3" class="empty-message">No exits yet</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Manual Entry/Exit Form -->
+        <div class="card">
+            <h2>⚙️ Manual Entry/Exit (For Testing)</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <!-- Manual Entry -->
+                <div>
+                    <h3 style="color: #333; margin-bottom: 15px; font-size: 16px;">📍 Manual Entry</h3>
+                    <div class="form-group">
+                        <label>License Plate</label>
+                        <input type="text" id="entry-plate" placeholder="e.g., QL9904" style="text-transform: uppercase;">
+                    </div>
+                    <button class="btn-entry" onclick="manualEntry()">🚗 Record Entry</button>
+                    <div id="entry-alert" class="alert"></div>
+                </div>
+
+                <!-- Manual Exit -->
+                <div>
+                    <h3 style="color: #333; margin-bottom: 15px; font-size: 16px;">📍 Manual Exit</h3>
+                    <div class="form-group">
+                        <label>License Plate</label>
+                        <input type="text" id="exit-plate" placeholder="e.g., QL9904" style="text-transform: uppercase;">
+                    </div>
+                    <button class="btn-exit" onclick="manualExit()">🚙 Record Exit</button>
+                    <div id="exit-alert" class="alert"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Exit Details Modal -->
+        <div id="exit-details" style="display: none; margin-top: 20px;">
+            <div class="card" style="background: #f9f9f9; border: 2px solid #FF9800;">
+                <h2>💳 Exit Payment Details</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <p><strong>License Plate:</strong> <span id="detail-plate" class="plate"></span></p>
+                        <p><strong>Entry Time:</strong> <span id="detail-entry" class="time"></span></p>
+                        <p><strong>Exit Time:</strong> <span id="detail-exit" class="time"></span></p>
+                    </div>
+                    <div>
+                        <p><strong>Duration:</strong> <span id="detail-duration" class="duration"></span></p>
+                        <p><strong>Billable Hours:</strong> <span id="detail-billable"></span></p>
+                        <p style="font-size: 18px; margin-top: 10px;"><strong>Total Amount:</strong> <span id="detail-amount" style="color: #FF9800; font-size: 24px;"></span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Update time display
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = now.toLocaleString();
+        }
+        updateTime();
+        setInterval(updateTime, 1000);
+
+        // Fetch stats
+        function updateStats() {
+            fetch('/api/stats')
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('cars-in').textContent = data.cars_in;
+                    document.getElementById('exits-today').textContent = data.exits_today;
+                    document.getElementById('revenue-today').textContent = data.revenue_today.toFixed(2);
+                    document.getElementById('total-revenue').textContent = data.total_revenue.toFixed(2);
+                });
+        }
+
+        // Fetch active vehicles
+        function updateActiveVehicles() {
+            fetch('/api/active-vehicles')
+                .then(r => r.json())
+                .then(data => {
+                    const tbody = document.getElementById('active-vehicles');
+                    if (data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="3" class="empty-message">No vehicles in lot</td></tr>';
+                    } else {
+                        tbody.innerHTML = data.map(v => `
+                            <tr>
+                                <td class="plate">${v.plate}</td>
+                                <td class="time">${new Date(v.entry_time).toLocaleString()}</td>
+                                <td class="duration">${v.duration_minutes} min (${v.duration_hours.toFixed(2)}h)</td>
+                            </tr>
+                        `).join('');
+                    }
+                });
+        }
+
+        // Fetch recent exits
+        function updateRecentExits() {
+            fetch('/api/recent-exits')
+                .then(r => r.json())
+                .then(data => {
+                    const tbody = document.getElementById('recent-exits');
+                    if (data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="3" class="empty-message">No exits yet</td></tr>';
+                    } else {
+                        tbody.innerHTML = data.map(e => `
+                            <tr>
+                                <td class="plate">${e.plate}</td>
+                                <td>${e.duration_hours}h</td>
+                                <td class="amount">${e.amount === 0 ? '<span class="free">FREE</span>' : 'Rs ' + e.amount.toFixed(2)}</td>
+                            </tr>
+                        `).join('');
+                    }
+                });
+        }
+
+        // Manual entry
+        function manualEntry() {
+            const plate = document.getElementById('entry-plate').value.trim();
+            if (!plate) {
+                showAlert('entry-alert', 'Please enter a plate number', 'error');
+                return;
+            }
+
+            fetch('/api/manual-entry', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({plate})
+            })
+            .then(r => r.json())
+            .then(data => {
+                showAlert('entry-alert', data.message, data.success ? 'success' : 'error');
+                if (data.success) {
+                    document.getElementById('entry-plate').value = '';
+                    updateStats();
+                    updateActiveVehicles();
+                }
+            });
+        }
+
+        // Manual exit
+        function manualExit() {
+            const plate = document.getElementById('exit-plate').value.trim();
+            if (!plate) {
+                showAlert('exit-alert', 'Please enter a plate number', 'error');
+                return;
+            }
+
+            fetch('/api/manual-exit', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({plate})
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('exit-alert', data.message, 'success');
+                    showExitDetails(data);
+                    document.getElementById('exit-plate').value = '';
+                    updateStats();
+                    updateActiveVehicles();
+                    updateRecentExits();
+                } else {
+                    showAlert('exit-alert', data.message, 'error');
+                }
+            });
+        }
+
+        // Show exit details
+        function showExitDetails(data) {
+            document.getElementById('detail-plate').textContent = data.plate;
+            document.getElementById('detail-entry').textContent = new Date(data.entry_time).toLocaleString();
+            document.getElementById('detail-exit').textContent = new Date(data.exit_time).toLocaleString();
+            document.getElementById('detail-duration').textContent = data.duration_hours.toFixed(2) + ' hours';
+            document.getElementById('detail-billable').textContent = data.billable_hours + ' hour(s)';
+            document.getElementById('detail-amount').textContent = data.amount === 0 ? 'FREE' : 'Rs ' + data.amount.toFixed(2);
+            document.getElementById('exit-details').style.display = 'block';
+        }
+
+        // Show alert
+        function showAlert(id, message, type) {
+            const alert = document.getElementById(id);
+            alert.textContent = message;
+            alert.className = 'alert ' + type;
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
+
+        // Allow Enter key for forms
+        document.getElementById('entry-plate').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') manualEntry();
+        });
+
+        document.getElementById('exit-plate').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') manualExit();
+        });
+
+        // Auto-uppercase inputs
+        document.getElementById('entry-plate').addEventListener('input', (e) => {
+            e.target.value = e.target.value.toUpperCase();
+        });
+
+        document.getElementById('exit-plate').addEventListener('input', (e) => {
+            e.target.value = e.target.value.toUpperCase();
+        });
+
+        // Initial load and refresh every 3 seconds
+        updateStats();
+        updateActiveVehicles();
+        updateRecentExits();
+
+        setInterval(() => {
+            updateStats();
+            updateActiveVehicles();
+            updateRecentExits();
+        }, 3000);
+    </script>
+</body>
+</html>
